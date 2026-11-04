@@ -1,5 +1,6 @@
 
 from fastapi import FastAPI
+from app.api.customer import router as customer_router
 
 # Create the FastAPI application
 app = FastAPI(
@@ -7,6 +8,7 @@ app = FastAPI(
     description="A loan management system with ML-based credit risk assessment",
     version="1.0.0"
 )
+app.include_router(customer_router)
 
 # Welcome endpoint
 @app.get("/")
