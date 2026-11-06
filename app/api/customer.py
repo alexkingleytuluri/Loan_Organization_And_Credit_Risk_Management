@@ -1,3 +1,10 @@
+from fastapi import APIRouter, HTTPException, Depends
+from sqlalchemy.orm import Session
+
+from app.schemas.customer import CustomerCreate, CustomerUpdate
+from app.models.customer import Customer
+from app.core.database import get_db
+
 from fastapi import APIRouter , HTTPException
 from app.schemas.customer import CustomerCreate , CustomerUpdate
 
@@ -10,22 +17,38 @@ router = APIRouter(
 customers = []
 
 @router.post("/")
-def register_customer(customer: CustomerCreate):
+def register_customer(
+    customer: CustomerCreate,
+    db: Session = Depends(get_db)
+):
+    new_customer = Customer(
+        full_name=customer.full_name,
+        email=customer.email,
+        phone=customer.phone,
+        age=customer.age,
+        monthly_income=customer.monthly_income
+    )
 
-    customer_data = customer.model_dump()
-
-    customer_data["id"] = len(customers) + 1
-
-    customers.append(customer_data)
+    db.add(new_customer)
+    db.commit()
+    db.refresh(new_customer)
 
     return {
         "message": "Customer registered successfully",
-        "customer": customer_data
+        "customer": {
+            "id": new_customer.id,
+            "full_name": new_customer.full_name,
+            "email": new_customer.email,
+            "phone": new_customer.phone,
+            "age": new_customer.age,
+            "monthly_income": new_customer.monthly_income
+        }
     }
 
 # Get all customers
 @router.get("/")
-def get_all_customers():
+def get_all_customers(db: Session = Depends(get_db)):
+    customers = db.query(Customer).all()
 
     return {
         "total_customers": len(customers),
@@ -34,50 +57,72 @@ def get_all_customers():
 
 # Get customer by ID
 @router.get("/{customer_id}")
-def get_customer(customer_id: int):
+def get_customer(
+    customer_id: int,
+    db: Session = Depends(get_db)
+):
+    customer = db.query(Customer).filter(
+        Customer.id == customer_id
+    ).first()
 
-    for customer in customers:
-        if customer["id"] == customer_id:
-            return customer
+    if customer is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Customer not found"
+        )
 
-    raise HTTPException(
-        status_code=404,
-        detail="Customer not found"
-    )
+    return customer
 
 # Update customer
 @router.put("/{customer_id}")
-def update_customer(customer_id: int, updated_data: CustomerUpdate):
+def update_customer(
+    customer_id: int,
+    updated_data: CustomerUpdate,
+    db: Session = Depends(get_db)
+):
+    customer = db.query(Customer).filter(
+        Customer.id == customer_id
+    ).first()
 
-    for customer in customers:
-        if customer["id"] == customer_id:
+    if customer is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Customer not found"
+        )
 
-            customer.update(updated_data.model_dump())
+    customer.full_name = updated_data.full_name
+    customer.email = updated_data.email
+    customer.phone = updated_data.phone
+    customer.age = updated_data.age
+    customer.monthly_income = updated_data.monthly_income
 
-            return {
-                "message": "Customer updated successfully",
-                "customer": customer
-            }
+    db.commit()
+    db.refresh(customer)
 
-    raise HTTPException(
-        status_code=404,
-        detail="Customer not found"
-    )
+    return {
+        "message": "Customer updated successfully",
+        "customer": customer
+    }
 
-    # Delete customer
+# Delete customer
 @router.delete("/{customer_id}")
-def delete_customer(customer_id: int):
+def delete_customer(
+    customer_id: int,
+    db: Session = Depends(get_db)
+):
+    customer = db.query(Customer).filter(
+        Customer.id == customer_id
+    ).first()
 
-    for customer in customers:
-        if customer["id"] == customer_id:
+    if customer is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Customer not found"
+        )
 
-            customers.remove(customer)
+    db.delete(customer)
+    db.commit()
 
-            return {
-                "message": "Customer deleted successfully"
-            }
-
-    raise HTTPException(
-        status_code=404,
-        detail="Customer not found"
-    )
+    return {
+        "message": "Customer deleted successfully"
+    }

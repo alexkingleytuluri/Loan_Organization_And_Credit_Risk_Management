@@ -36,3 +36,6 @@ ml/data/processed/
 # Operating system
 .DS_Store
 Thumbs.db
+
+# SQLite database
+*.db

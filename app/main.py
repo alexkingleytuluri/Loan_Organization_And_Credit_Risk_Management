@@ -1,16 +1,22 @@
-
 from fastapi import FastAPI
-from app.api.customer import router as customer_router
 
-# Create the FastAPI application
+from app.api.customer import router as customer_router
+from app.core.database import engine, Base
+from app.models import customer
+
 app = FastAPI(
     title="Loan Organization and Credit Risk Management",
     description="A loan management system with ML-based credit risk assessment",
     version="1.0.0"
 )
+
+# Create database tables
+Base.metadata.create_all(bind=engine)
+
+# Connect customer API
 app.include_router(customer_router)
 
-# Welcome endpoint
+
 @app.get("/")
 def home():
     return {
@@ -18,7 +24,7 @@ def home():
         "status": "Backend is running successfully"
     }
 
-# Health check endpoint
+
 @app.get("/health")
 def health_check():
     return {
