@@ -1,3 +1,4 @@
+
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 
@@ -5,22 +6,29 @@ from app.schemas.customer import CustomerCreate, CustomerUpdate
 from app.models.customer import Customer
 from app.core.database import get_db
 
-from fastapi import APIRouter , HTTPException
-from app.schemas.customer import CustomerCreate , CustomerUpdate
-
 router = APIRouter(
     prefix="/customers",
     tags=["Customers"]
 )
 
-# Temporary storage
-customers = []
 
+# Register customer
 @router.post("/")
 def register_customer(
     customer: CustomerCreate,
     db: Session = Depends(get_db)
 ):
+    # Check for duplicate email
+    existing_customer = db.query(Customer).filter(
+        Customer.email == customer.email
+    ).first()
+
+    if existing_customer:
+        raise HTTPException(
+            status_code=400,
+            detail="Email already registered"
+        )
+
     new_customer = Customer(
         full_name=customer.full_name,
         email=customer.email,
@@ -45,6 +53,7 @@ def register_customer(
         }
     }
 
+
 # Get all customers
 @router.get("/")
 def get_all_customers(db: Session = Depends(get_db)):
@@ -54,6 +63,7 @@ def get_all_customers(db: Session = Depends(get_db)):
         "total_customers": len(customers),
         "customers": customers
     }
+
 
 # Get customer by ID
 @router.get("/{customer_id}")
@@ -72,6 +82,7 @@ def get_customer(
         )
 
     return customer
+
 
 # Update customer
 @router.put("/{customer_id}")
@@ -103,6 +114,7 @@ def update_customer(
         "message": "Customer updated successfully",
         "customer": customer
     }
+
 
 # Delete customer
 @router.delete("/{customer_id}")
