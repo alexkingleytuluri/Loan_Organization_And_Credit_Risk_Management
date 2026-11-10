@@ -18,7 +18,6 @@ def register_customer(
     customer: CustomerCreate,
     db: Session = Depends(get_db)
 ):
-    # Check for duplicate email
     existing_customer = db.query(Customer).filter(
         Customer.email == customer.email
     ).first()
@@ -99,6 +98,18 @@ def update_customer(
         raise HTTPException(
             status_code=404,
             detail="Customer not found"
+        )
+
+    # Check whether another customer uses this email
+    existing_customer = db.query(Customer).filter(
+        Customer.email == updated_data.email,
+        Customer.id != customer_id
+    ).first()
+
+    if existing_customer:
+        raise HTTPException(
+            status_code=400,
+            detail="Email already registered to another customer"
         )
 
     customer.full_name = updated_data.full_name
