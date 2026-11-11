@@ -13,3 +13,16 @@ class CustomerUpdate(BaseModel):
     phone: str = Field(..., min_length=10, max_length=15)
     age: int = Field(..., ge=18, le=100)
     monthly_income: float = Field(..., gt=0)
+
+
+from pydantic import BaseModel, Field, EmailStr, ConfigDict
+
+class CustomerResponse(BaseModel):
+    id: int
+    full_name: str
+    email: EmailStr
+    phone: str
+    age: int
+    monthly_income: float
+
+    model_config = ConfigDict(from_attributes=True)
