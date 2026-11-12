@@ -2,7 +2,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 
-from app.schemas.customer import CustomerCreate, CustomerUpdate, CustomerResponse
+from app.schemas.customer import CustomerCreate, CustomerUpdate, CustomerResponse, CustomerListResponse 
 from app.models.customer import Customer
 from app.core.database import get_db
 
@@ -13,7 +13,7 @@ router = APIRouter(
 
 
 # Register customer
-@router.post("/")
+@router.post("/", response_model=CustomerRegistrationResponse)
 def register_customer(
     customer: CustomerCreate,
     db: Session = Depends(get_db)
@@ -54,7 +54,7 @@ def register_customer(
 
 
 # Get all customers
-@router.get("/")
+@router.get("/", response_model=CustomerListResponse)
 def get_all_customers(db: Session = Depends(get_db)):
     customers = db.query(Customer).all()
 
@@ -84,7 +84,7 @@ def get_customer(
 
 
 # Update customer
-@router.put("/{customer_id}")
+@router.put("/{customer_id}", response_model=CustomerRegistrationResponse)
 def update_customer(
     customer_id: int,
     updated_data: CustomerUpdate,

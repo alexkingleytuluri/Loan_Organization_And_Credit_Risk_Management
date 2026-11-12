@@ -26,3 +26,7 @@ class CustomerResponse(BaseModel):
     monthly_income: float
 
     model_config = ConfigDict(from_attributes=True)
+
+class CustomerListResponse(BaseModel):
+    total_customers: int
+    customers: list[CustomerResponse]
