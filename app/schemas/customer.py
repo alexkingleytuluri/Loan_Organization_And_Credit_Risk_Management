@@ -30,3 +30,7 @@ class CustomerResponse(BaseModel):
 class CustomerListResponse(BaseModel):
     total_customers: int
     customers: list[CustomerResponse]
+
+class CustomerRegistrationResponse(BaseModel):
+    message: str
+    customer: CustomerResponse
