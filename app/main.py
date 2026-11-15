@@ -3,6 +3,8 @@ from fastapi import FastAPI
 from app.api.customer import router as customer_router
 from app.core.database import engine, Base
 from app.models import customer
+from app.models import loan
+from app.api.loan import router as loan_router
 
 app = FastAPI(
     title="Loan Organization and Credit Risk Management",
@@ -15,7 +17,7 @@ Base.metadata.create_all(bind=engine)
 
 # Connect customer API
 app.include_router(customer_router)
-
+app.include_router(loan_router)
 
 @app.get("/")
 def home():
