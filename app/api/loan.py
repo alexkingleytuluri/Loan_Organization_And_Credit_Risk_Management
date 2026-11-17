@@ -4,7 +4,12 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.models.loan import Loan
 from app.models.customer import Customer
-from app.schemas.loan import LoanCreate
+from app.schemas.loan import (
+    LoanCreate,
+    LoanResponse,
+    LoanListResponse,
+    LoanRegistrationResponse
+)
 
 router = APIRouter(
     prefix="/loans",
