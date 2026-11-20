@@ -31,3 +31,9 @@ class LoanListResponse(BaseModel):
 class LoanRegistrationResponse(BaseModel):
     message: str
     loan: LoanResponse
+
+# Loan update schema
+class LoanUpdate(BaseModel):
+    loan_amount: float = Field(..., gt=0)
+    interest_rate: float = Field(..., ge=0, le=100)
+    loan_duration: int = Field(..., gt=0, le=360)

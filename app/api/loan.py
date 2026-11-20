@@ -6,6 +6,7 @@ from app.models.loan import Loan
 from app.models.customer import Customer
 from app.schemas.loan import (
     LoanCreate,
+    LoanUpdate,
     LoanResponse,
     LoanListResponse,
     LoanRegistrationResponse
@@ -83,3 +84,52 @@ def get_loan(loan_id: int, db: Session = Depends(get_db)):
         )
 
     return loan
+
+# Update loan details
+@router.put("/{loan_id}", response_model=LoanRegistrationResponse)
+def update_loan(
+    loan_id: int,
+    updated_data: LoanUpdate,
+    db: Session = Depends(get_db)
+):
+    loan = db.query(Loan).filter(
+        Loan.id == loan_id
+    ).first()
+
+    if loan is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Loan not found"
+        )
+
+    loan.loan_amount = updated_data.loan_amount
+    loan.interest_rate = updated_data.interest_rate
+    loan.loan_duration = updated_data.loan_duration
+
+    db.commit()
+    db.refresh(loan)
+
+    return {
+        "message": "Loan updated successfully",
+        "loan": loan
+    }
+
+# Delete loan application
+@router.delete("/{loan_id}")
+def delete_loan(loan_id: int, db: Session = Depends(get_db)):
+    loan = db.query(Loan).filter(
+        Loan.id == loan_id
+    ).first()
+
+    if loan is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Loan not found"
+        )
+
+    db.delete(loan)
+    db.commit()
+
+    return {
+        "message": "Loan application deleted successfully"
+    }
